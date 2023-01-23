@@ -1,10 +1,24 @@
 import Head from 'next/head'
 import Image from 'next/image'
+import cookies from "next-cookies";
 import { Layout } from '../components/Layout'
+import jwt from "jsonwebtoken";
 
+export async function getServerSideProps(ctx) {
+  const token = cookies(ctx)
+  if (!token.token) {
+    return { props: {
+      user: ''
+    } }
+  } else {
+    const decode = jwt.decode(token.token, process.env.TOKEN_SECRET)
+    return { props: {
+      user: decode
+    } }
+  }
+}
 
-export default function Home() {
-
+export default function Home({ user }) {
 
   return (
     <>
@@ -14,43 +28,65 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main>
-        <Layout>
-          <div className="w-full h-screen bg-[rgb(242,242,242)] overflow-hidden">
-            <div className="absolute w-full h-full bg-black opacity-30 z-[4]"></div>
-            {/* Gambar halaman utama */}
-            <section id='hero-image' className='relative w-full h-full'>
-              <Image src={'/image/bspji-palembang.jpg'} alt='bspji-palembang' fill/>
-            </section>
+      <Layout user={user}>
+        <div className="w-full h-screen bg-[rgb(242,242,242)] overflow-hidden">
+          <div className="absolute w-full h-full bg-black opacity-30 z-[4]"></div>
+          {/* Gambar halaman utama */}
+          <section id='hero-image' className='relative w-full h-full'>
+            <Image src={'/image/bspji-palembang.jpg'} alt='bspji-palembang' fill />
+          </section>
 
-            {/* Pencarian Buku */}
-            <section className="absolute px-4 py-8 md:p-6 md:pb-14 left-6 right-6 md:left-[18%] md:right-[18%] top-[56%] bg-white rounded-xl space-y-5 z-10">
-              <h1 className="text-xl text-left font-bold">
-                🔍 Cari Koleksi
-              </h1>
-              <div className="flex w-full space-x-2">
-                <input
-                  type="search"
-                  required={true}
-                  placeholder="Cari berdasarkan kata kunci..."
-                  className="input w-full py-3"
-                />
-                <button
-                  type="submit"
-                  className="btn-search px-6"
-                >
-                  Cari
-                </button>
+          {/* Pencarian Buku */}
+          <section className="absolute px-4 py-8 md:p-6 md:pb-14 left-6 right-6 md:left-[18%] md:right-[18%] top-[56%] bg-white rounded-xl space-y-5 z-10">
+            <h1 className="text-xl text-left font-bold">
+              🔍 Cari Koleksi
+            </h1>
+            <div className="flex w-full space-x-2">
+              <input
+                type="search"
+                required={true}
+                placeholder="Cari berdasarkan kata kunci (judul, pengarang, penerbit)"
+                className="input"
+              />
+              <button
+                type="submit"
+                className="btn-search px-6"
+              >
+                Cari
+              </button>
+            </div>
+          </section>
+          {/* Akhir pencarian buku */}
+
+        </div>
+        <main className="bg-gray-100 py-10 space-y-6">
+
+          {/* Menampilkan hasil pencarian */}
+          <div className='w-[1160px] m-auto md:px-10 md:py-12 bg-white space-y-10 rounded-2xl'>
+            <h1 className='text-center font-medium'>Hasil pencarian teratas yang mungkin anda cari :</h1>
+            <div className="flex justify-center w-full space-x-3">
+              <div className="relative w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden">
+                <div className="absolute h-36 p-4 left-0 right-0 bottom-0 bg-red-500">
+                  <h2 className='text-lg font-bold'>Judul buku kalo ...</h2>
+                </div>
               </div>
-            </section>
-            {/* Akhir pencarian buku */}
+              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
+              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
+              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
+              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
+              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
+            </div>
+          </div>
+          {/* Akhir menampilkan hasil pencarian */}
 
-          </div>
-          <div className="container">
-            <h1 className='mt-[200px]'>Hello World</h1>
-          </div>
-        </Layout>
-      </main>
+          {/* Menampilkan buku pilihan pembaca */}
+          {/* <div className='w-[1160px] m-auto md:px-10 md:py-12 bg-white space-y-10 rounded-2xl'>
+            <h1>Hello World</h1>
+          </div> */}
+          {/* Akhir menampilkan buku pilihan pembaca */}
+
+        </main>
+      </Layout>
     </>
   )
 }

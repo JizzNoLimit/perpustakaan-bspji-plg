@@ -1,8 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
+import Cookie from "js-cookie";
+import { useEffect, useState } from "react";
+import jwt from "jsonwebtoken";
 
 // Navbar Dashboard
 export default function Navbar(props) {
+    
     return (
         <nav className="fixed flex items-center w-full top-0 left-0 right-0 md:left-[258px] h-[72px] md:h-[60px] px-4 bg-white">
             <div className="h-full md:hidden">
@@ -31,22 +35,24 @@ export default function Navbar(props) {
 }
 
 // Navbar Home
-export function NavbarHome() {
+export function NavbarHome({user}) {
+    // user = { id: '2342343434', role: 'admin', username: 'adminGanteng', nama: 'Muhammad Ajiz Alfarizi'}
     return (
         <nav className="navbar h-[80px] md:h-[70px]">
             <div className="container flex items-center justify-between px-6">
 
                 {/* Link logo instalnsi */}
                 <Link href="/"> 
-                    <span className="cursor-pointer">
+                    <div className="relative w-40 h-[50px] cursor-pointer">
                         {/* Logo instansi */}
                         <Image
                             src={"/image/logo-bspji-palembang-horizontal.png"}
                             alt="logo bspji"
-                            width={138}
-                            height={42}
+                            fill
+                            sizes="160px"
+                            style={{objectFit:"contain"}}
                         />
-                    </span>
+                    </div>
                 </Link>
 
                 {/* Link menu & login */}
@@ -57,11 +63,29 @@ export function NavbarHome() {
                         <Link href={"/"} className="nav-link">Struktur</Link>
                         <Link href={"/"} className="nav-link">Peraturan</Link>
                     </div>
-                    <Link href="/auth/login">
-                        <button className="btn px-4">
+                    {user.role === 'admin' && (<Link href={`/${user.role}/dashboard`}>
+                        <div className="flex space-x-1">
+                            <div className="w-10 h-10 bg-emerald-600 rounded-full"></div>
+                            <div>
+                                <h1 className="text-sm">{user.role}</h1>
+                                <p className="text-xs text-gray-500">{user.id}</p>
+                            </div>
+                        </div>
+                    </Link>)}
+                    {user.role === 'user' && (<Link href={`/${user.username}/dashboard`}>
+                        <div className="flex space-x-2">
+                            <div className="w-10 h-10 bg-emerald-600 rounded-full"></div>
+                            <div>
+                                <h1 className="text-sm">{user.nama}</h1>
+                                <p className="text-xs text-gray-500">{user.id}</p>
+                            </div>
+                        </div>
+                    </Link>)}
+                    {!user && (<Link href={`/auth/login`}>
+                        <button className={`btn px-4`}>
                             Login
                         </button>
-                    </Link>
+                    </Link>)}
                 </div>
             </div>
         </nav>
