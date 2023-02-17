@@ -91,6 +91,7 @@ export default function Login(props) {
                                 name="email"
                                 placeholder="E-mail"
                                 className="input"
+                                required
                             />
                             {/* {errors.email && (
                                 <span className="text-xs pt-2">
@@ -110,6 +111,7 @@ export default function Login(props) {
                                 name="password"
                                 placeholder="Password"
                                 className="input"
+                                required
                             />
                             {/* {errors.password && (
                                 <span className="text-xs pt-2">

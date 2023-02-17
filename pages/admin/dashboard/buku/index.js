@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import AdminLayout from "../../../../components/Layout";
+import Pagination from "../../../../components/Pagination";
 import { authPageAdmin } from "../../../../middleware/authPage";
 
 export async function getServerSideProps(ctx) {
@@ -17,6 +18,7 @@ export default function BukuIndex({token}) {
         desk: ''
     })
     const [buku, setBuku] = useState('')
+    const [click, setClick] = useState(false)
     const [file, setFile] = useState(null)
     const [keyword, setKeyword] = useState('')
     const [page, setPage] = useState(0)
@@ -28,9 +30,9 @@ export default function BukuIndex({token}) {
     const [updateActive, setUpdateActive] = useState(false)
     useEffect(() => {
         getBuku()
-    }, [keyword, page])
+    }, [keyword, page, click])
     const getBuku = async () => {
-        const req = await fetch(process.env.API_SERVER + `/admin/buku?search_query=${keyword}&page=${page}&limit=10`, {
+        const req = await fetch(process.env.API_SERVER + `/admin/buku?search_query=${keyword}&page=${page}&limit=${limit}`, {
             method: 'GET',
             headers: {
                 'Authorization': "Bearer " + token
@@ -79,7 +81,7 @@ export default function BukuIndex({token}) {
         formData.append("tahun", feild.tahun)
         formData.append("edisi", feild.edisi)
         formData.append("fisik", feild.fisik)
-        formData.append("subyek", feild.subyek)
+        formData.append("kategori", feild.subyek)
         formData.append("cover", file)
         formData.append("desk", feild.desk)
         fetch(process.env.API_SERVER + "/admin/buku/upload", {
@@ -92,6 +94,8 @@ export default function BukuIndex({token}) {
             .then((res) => res.json())
             .then((data) => {
                 setAddActive(false)
+                setClick(!click)
+                setFormPage(0)
             })
             .catch((err) => {
                 console.log(err.message);
@@ -108,7 +112,7 @@ export default function BukuIndex({token}) {
         formData.append("tahun", feild.tahun)
         formData.append("edisi", feild.edisi)
         formData.append("fisik", feild.fisik)
-        formData.append("subyek", feild.subyek)
+        formData.append("kategori", feild.subyek)
         formData.append("cover", file)
         formData.append("desk", feild.desk)
         fetch(process.env.API_SERVER + `/admin/buku/update?id=${feild.id}`, {
@@ -120,30 +124,23 @@ export default function BukuIndex({token}) {
         })
             .then((res) => res.json())
             .then((data) => {
+                setClick(!click)
                 setUpdateActive(false)
+                setFormPage(0)
             })
             .catch((err) => {
                 console.log(err.message);
             });
     }
-    function handleDelete(id) {
-        console.log(id)
+    async function handleDelete(id) {
+        await fetch(process.env.API_SERVER + `/admin/buku/delete?id=${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token },
+        })
         const bukuFilter = buku.filter((data) => {
             return data.id !== id && data;
         });
         setBuku(bukuFilter);
-
-        fetch(process.env.API_SERVER + `/admin/buku/delete?id=${id}`, {
-            method: "DELETE",
-            headers: { Authorization: "Bearer " + token },
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                console.log(data);
-            })
-            .catch((err) => {
-                console.log(err.message);
-            });
     }
     function fieldHandler(e) {
         const name = e.target.getAttribute('name')
@@ -169,12 +166,12 @@ export default function BukuIndex({token}) {
                     <table className="w-full text-sm">
                         <thead className="">
                             <tr className="text-left">
-                                <th className="w-[130px] px-4 py-5 text-center bg-white rounded-l-xl">Cover</th>
-                                <th className="w-[160px] px-4 py-5 text-center bg-white">Kode Panggil</th>
+                                <th className="w-[120px] px-4 py-5 text-center bg-white rounded-l-xl">Cover</th>
+                                <th className="w-[130px] px-4 py-5 text-center bg-white">Kode Panggil</th>
                                 <th className="px-4 py-5 bg-white">Judul</th>
                                 <th className="px-4 py-5 bg-white">Pengarang</th>
-                                <th className="w-[100px] px-4 py-5 bg-white">Status</th>
-                                <th className="w-[160px] mb-5 px-4 py-5 text-center bg-white rounded-r-xl">Aksi</th>
+                                <th className="w-[90px] px-4 py-5 text-center bg-white">Status</th>
+                                <th className="w-[130px] mb-5 px-4 py-5 text-center bg-white rounded-r-xl">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="">
@@ -199,14 +196,14 @@ export default function BukuIndex({token}) {
                                             </div>
                                         </td>
                                         <td className="p-4 text-center">{data.no_panggil}</td>
-                                        <td className="p-4">{data.judul}</td>
-                                        <td className="p-4">{data.pengarang}</td>
+                                        <td className="min-w-[180px] max-w-[240px] p-4 truncate">{data.judul}</td>
+                                        <td className="max-w-[160px] p-4 truncate">{data.pengarang}</td>
                                         <td className="p-4 text-white">{data.status ? (
                                             <span className="px-3 bg-emerald-500 rounded-full">Tersedia</span>
                                         ) : (
                                                 <span className="px-3 bg-red-600 rounded-full">Dipinjam</span>
                                         )}</td>
-                                        <td className="p-4 text-center space-x-3">
+                                        <td className="p-4 text-center text-xs space-x-1">
                                             <button onClick={() => editOnClick(data.id)} className="btn px-2">Edit</button>
                                             <button onClick={() => handleDelete(data.id)} className="btn-delete px-2">Hapus</button>
                                         </td>
@@ -528,11 +525,7 @@ export default function BukuIndex({token}) {
                         </section>
 
                     </form>
-                    <div className="absolute space-y-2 bottom-10 right-4 left-4">
-                        <button onClick={() => handleSubmitUpdate()} className={`btn w-full ${formPage !== 2 && 'hidden'}`}>Simpan</button>
-                        <button onClick={() => setFormPage(formPage + 1)} className={`${formPage === 2 && 'hidden'} btn w-full`}>Selanjutnya</button>
-                        <button onClick={() => setUpdateActive(false)} className="btn-delete w-full">Batal</button>
-                    </div>
+                    <Pagination rows={rows} page={page} pages={pages} />
                 </div>
             </AdminLayout>
         </>

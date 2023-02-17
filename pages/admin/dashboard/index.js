@@ -1,4 +1,5 @@
 import Image from "next/image"
+import { useEffect, useState } from "react"
 import AdminLayout from "../../../components/Layout"
 import { authPageAdmin } from "../../../middleware/authPage"
 
@@ -8,6 +9,21 @@ export async function getServerSideProps(ctx) {
 }
 
 function DashboardIndex(){
+    const [data, setData] = useState({
+        user: 0, buku: 0, pinjam: 0, kembali: 0
+    })
+
+    useEffect(() => {
+        getUser()
+    }, [])
+
+    async function getUser() {
+        const req = await fetch(process.env.API_SERVER + `/total-data`, {
+            method: "GET",
+        })
+        const { data } = await req.json()
+        setData(data)
+    }
     return (
         <>
             <AdminLayout>
@@ -25,7 +41,7 @@ function DashboardIndex(){
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold">
-                                    84
+                                    {data.buku}
                                 </h1>
                                 <p>Koleksi Buku</p>
                             </div>
@@ -36,7 +52,7 @@ function DashboardIndex(){
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold">
-                                    43
+                                    {data.user}
                                 </h1>
                                 <p>Anggota</p>
                             </div>
@@ -47,7 +63,7 @@ function DashboardIndex(){
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold">
-                                    183
+                                    {data.kembali}
                                 </h1>
                                 <p>Belum Dikembalikan</p>
                             </div>
@@ -58,7 +74,7 @@ function DashboardIndex(){
                             </div>
                             <div>
                                 <h1 className="text-4xl font-bold">
-                                    100
+                                    {data.pinjam}
                                 </h1>
                                 <p>Peminjaman</p>
                             </div>

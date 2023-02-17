@@ -1,6 +1,6 @@
 import Footer from "./Footer.js";
 import Navbar, { NavbarHome } from "./Navbar.js";
-import SidebarAdmin, {SidebarUser} from "./Sidebar.js";
+import SidebarAdmin, {SidebarKepala, SidebarUser} from "./Sidebar.js";
 
 export default function AdminLayout({ children }) {
     return (
@@ -15,7 +15,7 @@ export default function AdminLayout({ children }) {
 
 export function Layout({ user, children }) {
     return (
-        <div>
+        <div className="h-full">
             <NavbarHome user={user}/>
             {children}
             <Footer />
@@ -23,12 +23,22 @@ export function Layout({ user, children }) {
     );
 }
 
+export function KepalaLayout({children}) {
+    return (
+        <div className="md:flex bg-[#EDF1F3]">
+            <SidebarKepala />
+            <div className="w-full p-4 md:p-4">
+                {children}
+            </div>
+        </div>
+    )
+}
+
 export function UserLayout({ children }) {
     return (
         <div className="md:flex bg-[#EDF1F3]">
             <SidebarUser />
             <div className="w-full p-4 md:p-4">
-                <Navbar />
                 {children}
             </div>
         </div>

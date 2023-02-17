@@ -3,6 +3,8 @@ import Image from 'next/image'
 import cookies from "next-cookies";
 import { Layout } from '../components/Layout'
 import jwt from "jsonwebtoken";
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 export async function getServerSideProps(ctx) {
   const token = cookies(ctx)
@@ -19,7 +21,27 @@ export async function getServerSideProps(ctx) {
 }
 
 export default function Home({ user }) {
-
+  const [buku, setBuku] = useState('')
+  const [keyword, setKeyword] = useState(null)
+  const [search, setSearch] = useState(false)
+  const [searchLoad, setSearchLoad] = useState(false)
+  async function getBuku() {
+    setSearchLoad(true)
+    if (keyword === '' || keyword === ' ') {
+      setBuku('')
+    } else {
+      const req = await fetch(process.env.API_SERVER + `/cari/buku?search_query=${keyword}`, {
+        method: 'GET'
+      })
+      const buku = await req.json()
+      setBuku(buku.data)
+    }
+    setSearch(true)
+    setSearchLoad(false)
+  }
+  function fieldHandler(e) {
+    setKeyword(e.target.value)
+  }
   return (
     <>
       <Head>
@@ -33,50 +55,81 @@ export default function Home({ user }) {
           <div className="absolute w-full h-full bg-black opacity-30 z-[4]"></div>
           {/* Gambar halaman utama */}
           <section id='hero-image' className='relative w-full h-full'>
-            <Image src={'/image/bspji-palembang.jpg'} alt='bspji-palembang' fill />
+            <Image src={'/image/bspji-palembang.jpg'} alt='bspji-palembang' fill style={{ objectFit: "cover" }} />
           </section>
 
           {/* Pencarian Buku */}
-          <section className="absolute px-4 py-8 md:p-6 md:pb-14 left-6 right-6 md:left-[18%] md:right-[18%] top-[56%] bg-white rounded-xl space-y-5 z-10">
+          <section className="absolute px-4 py-8 md:p-6 max-w-[800px] md:pb-14 left-3 right-3 top-[50%] mx-auto bg-white rounded-xl space-y-5 z-10">
             <h1 className="text-xl text-left font-bold">
               🔍 Cari Koleksi
             </h1>
             <div className="flex w-full space-x-2">
               <input
+                onChange={(e) => fieldHandler(e)}
                 type="search"
                 required={true}
-                placeholder="Cari berdasarkan kata kunci (judul, pengarang, penerbit)"
+                placeholder="Cari berdasarkan kata kunci (judul, no buku, penerbit)"
                 className="input"
               />
               <button
+                onClick={() => getBuku()}
                 type="submit"
-                className="btn-search px-6"
+                className="btn-search w-[120px]"
               >
-                Cari
+                {searchLoad ? 'Loading...' : 'Cari'}
               </button>
             </div>
           </section>
           {/* Akhir pencarian buku */}
 
         </div>
-        <main className="bg-gray-100 py-10 space-y-6">
+        <main className="bg-gray-100 py-10 px-4 md:px-10 space-y-6">
 
           {/* Menampilkan hasil pencarian */}
-          <div className='w-[1160px] m-auto md:px-10 md:py-12 bg-white space-y-10 rounded-2xl'>
-            <h1 className='text-center font-medium'>Hasil pencarian teratas yang mungkin anda cari :</h1>
-            <div className="flex justify-center w-full space-x-3">
-              <div className="relative w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden">
-                <div className="absolute h-36 p-4 left-0 right-0 bottom-0 bg-red-500">
-                  <h2 className='text-lg font-bold'>Judul buku kalo ...</h2>
+          {buku.length !== 0 ? (
+            <>
+            <h1 className='text-center font-bold text-xl'>Hasil pencarian koleksi yang mungkin anda cari :</h1>
+            <div className='container m-auto px-2 py-8 md:px-10 md:py-8 max-w-[1120px] bg-white space-y-10 rounded-2xl'>
+              <div className="flex flex-wrap justify-center w-full space-x-3 ">
+                {buku.slice(0, 1).map((data, index) => (
+                  <Link
+                    key={index}
+                    href={`/buku/${data.id}`}
+                    rel="preload"
+                  >
+                      <div className="relative w-[160px] h-[230px] rounded-xl border-[3px] border-[#e0e0e0] overflow-hidden cursor-pointer">
+                        <Image src={`${process.env.SERVER}/uploads/cover/${data.img_url}`} alt='cover' fill sizes="200px" style={{ objectFit: "cover", zIndex: '1' }} />
+                        {data.status ? (
+                          <span className="absolute top-2 right-3 px-3 text-xs py-1 text-white bg-emerald-400 rounded-full z-10">
+                            <h1>Tersedia</h1>
+                          </span>
+                        ) : (
+                          <span className="absolute top-2 right-2 px-3 text-xs py-1 text-white bg-red-400 rounded-full z-10">
+                            <h1>Dipinjam</h1>
+                          </span>
+                        )}
+                        <div className='absolute w-full px-2 pb-3 pt-1 right-0 left-0 bottom-0 text-white bg-slate-900 bg-opacity-40 z-10'>
+                            <h1 className=" bottom-5 text-lg leading-6 font-bold z-10 truncate">
+                              {data.judul}
+                            </h1>
+                          <p className=" bottom-3 break-words text-[.65rem] font-semibold z-10 truncate">
+                            {data.pengarang}
+                          </p>
+                        </div>
+                      </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+            </>
+          ) : (
+              <div className={`w-full ${!search ? 'hidden' : ''}`}>
+                <h1 className='text-center font-bold text-xl mb-4'>Hasil pencarian koleksi yang mungkin anda cari :</h1>
+                <div className={`w-full py-10 bg-white space-y-10 rounded-2xl text-center`}>
+                  <span className='py-2 px-4 bg-red-500 rounded-full'>Koleksi tidak ditemukan</span>
                 </div>
               </div>
-              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
-              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
-              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
-              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
-              <div className="w-full max-w-[180px] h-[260px] bg-emerald-500 rounded-lg overflow-hidden"></div>
-            </div>
-          </div>
+          )}
           {/* Akhir menampilkan hasil pencarian */}
 
           {/* Menampilkan buku pilihan pembaca */}

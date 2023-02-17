@@ -63,6 +63,15 @@ export function NavbarHome({user}) {
                         <Link href={"/"} className="nav-link">Struktur</Link>
                         <Link href={"/"} className="nav-link">Peraturan</Link>
                     </div>
+                    {user.role === 'kepala' && (<Link href={`/${user.role}/dashboard`}>
+                        <div className="flex space-x-1">
+                            <div className="w-10 h-10 bg-emerald-600 rounded-full"></div>
+                            <div>
+                                <h1 className="text-sm">{user.role}</h1>
+                                <p className="text-xs text-gray-500">{user.id}</p>
+                            </div>
+                        </div>
+                    </Link>)}
                     {user.role === 'admin' && (<Link href={`/${user.role}/dashboard`}>
                         <div className="flex space-x-1">
                             <div className="w-10 h-10 bg-emerald-600 rounded-full"></div>
